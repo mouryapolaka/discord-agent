@@ -1,2 +1,4 @@
 # discord-agent
-My personal discord agent
+
+# How to install
+

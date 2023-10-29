@@ -1,7 +1,8 @@
 # Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
-ENV DISCORD_BOT_TOKEN placeholder_token
+ENV BOT_TOKEN placeholder_token
+ENV CHANNEL_ID placeholder_channel_id
 
 WORKDIR /app
 
