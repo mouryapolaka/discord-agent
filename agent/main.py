@@ -4,14 +4,20 @@ from functions import *
 import os
 import json
 from datetime import datetime
+import inspect
 
 intents = discord.Intents.default()
 intents.typing = False
 intents.presences = False
 intents.message_content = True
 
+with open("settings.json", "r") as file:
+    settings = json.load(file)
+
+channel_id = settings["channel_id"]
+bot_token = settings["bot_token"]
+
 bot = commands.Bot(command_prefix='.', intents=intents)
-channel_id = os.environ.get('CHANNEL_ID')
 
 @bot.event
 async def on_ready():
@@ -24,26 +30,52 @@ async def hey(ctx):
     await ctx.send('Hello!')
 
 @bot.command()
-async def docs(ctx):
-    """Returns list of commands"""
-    commands_list = []
-    for command in bot.commands:
-        if command.callback.__doc__ and command.name != 'help':
-            commands_list.append(f'`.{command.name}: {command.callback.__doc__}`')
-        elif command.name != 'help':
-            commands_list.append(f'`.{command.name}: No description provided`')
+async def docs(ctx, command_name: str = None):
+    """Returns list of commands or detailed description of a specific command."""
+    if command_name:
+        # Check if the specified command exists
+        command = bot.get_command(command_name)
+        if command and command.callback.__doc__:
+            await ctx.send(f"`.{command_name}` command: {command.callback.__doc__.strip()}")
+        else:
+            await ctx.send(f"Command `{command_name}` not found or no description provided.")
+    else:
+        commands_list = []
+        for command in bot.commands:
+            if command.callback.__doc__ and command.name != 'help':
+                commands_list.append(f'`.{command.name}: {command.callback.__doc__}`')
+            elif command.name != 'help':
+                commands_list.append(f'`.{command.name}: No description provided`')
 
-    # Sort the commands_list alphabetically by command name
-    sorted_commands_list = sorted(commands_list, key=lambda x: x.split(":")[0].lower())
-    
-    output_message = '\n\n'.join(sorted_commands_list)
-    await ctx.send(output_message)
+        # Sort the commands_list alphabetically by command name
+        sorted_commands_list = sorted(commands_list, key=lambda x: x.split(":")[0].lower())
+
+        output_message = '\n\n'.join(sorted_commands_list)
+        await ctx.send(output_message)
+
 
 @bot.command()
-async def example(ctx):
-    """Shows an example of the commands"""
-    # Show examples on how to use the commands
-    await ctx.send('Example')
+async def example(ctx, command_name=None):
+    """
+    Shows an example of the specified command. If no command is specified, 
+    provides examples for all available commands.
+    """
+    if command_name:
+        # Check if the specified command exists
+        command = bot.get_command(command_name)
+        if command and command.callback.__doc__:
+            await ctx.send(f"Example for `{command_name}` command: {command.callback.__doc__.strip()}")
+        else:
+            await ctx.send(f"Command `{command_name}` not found or no example provided.")
+    else:
+        # Get examples for all available commands
+        examples = []
+        for command in bot.commands:
+            if command.callback.__doc__ and command.name != 'example':
+                examples.append(f"**.{command.name}:** {command.callback.__doc__.strip()}")
+        
+        examples_message = "\n".join(examples)
+        await ctx.send(f"Examples for available commands:\n{examples_message}")
 
 @bot.command()
 async def ping(ctx):
@@ -52,7 +84,12 @@ async def ping(ctx):
 
 @bot.command()
 async def reminder(ctx, description, date, time):
-    """Sets a reminder with description, date, and time."""
+    """
+    Sets a reminder with description, date, and time.
+    
+    Example:
+    .reminder "Buy groceries" 2021-01-01 12:00
+    """
     
     # Combine date and time into a datetime object
     reminder_datetime = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
@@ -123,5 +160,5 @@ async def check_reminders():
     with open("output_files/old_reminders.json", "w") as old_file:
         json.dump(old_reminders, old_file)
 
-discord_bot_token = os.environ.get('BOT_TOKEN')
+discord_bot_token = bot_token
 bot.run(discord_bot_token)
