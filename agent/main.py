@@ -25,8 +25,13 @@ bot = commands.Bot(command_prefix='.', intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f'Logged in as {bot.user.name}')
+    print(f'{bot.user} has connected to Discord!')
     check_reminders.start()
+
+@bot.command()
+async def getstarted(ctx):
+    """Sends the intro message"""
+    await ctx.send("Hello! I am your personal chatbot. I am here to help you with your queries. \nYou can ask me anything and I will try my best to answer your questions. \n\nTo get started, type `.docs` to see the list of available commands. \nYou can also type `.docs <command>` to see the detailed description of a specific command. \nHowever, it would be best if you could provide me with some information about yourself. \nFor example `.config name <yourname>` \n\nTo start a natural conversation, make sure to set or update your LLM token. You can do this by typing \n`.config llm_token <token>` \n")
 
 @bot.command()
 async def hey(ctx):
