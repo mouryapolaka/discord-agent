@@ -3,24 +3,14 @@ from discord.ext import commands, tasks
 from functions import *
 import json
 from datetime import datetime
-
-from langchain.llms import OpenAI
-from langchain.chains import ConversationChain
-from langchain.memory import ConversationBufferMemory
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from llm import LLM
 
 intents = discord.Intents.default()
 intents.typing = False
 intents.presences = False
 intents.message_content = True
 
-chat_memory = ConversationBufferMemory()
-
-# Load existing 
-with open("files/config.json", "r") as file:
-    settings = json.load(file)
-    for item in settings:
-        chat_memory.save_context({"input": item}, {"output": settings[item]})
+model = LLM('')
 
 with open("settings.json", "r") as file:
     settings = json.load(file)
@@ -217,8 +207,6 @@ async def config(ctx, setting_name=None, setting_value=None):
     else:
         # For other settings, directly update the dictionary and JSON file
         settings[setting_name] = setting_value
-        chat_memory.save_context({"input": setting_name}, {"output": setting_value})
-        print(chat_memory)
         # Save updated settings to JSON file
         with open("files/config.json", "w") as file:
             json.dump(settings, file)
@@ -239,18 +227,9 @@ async def on_message(message):
             if "llm_token" not in settings:
                 await message.channel.send("No LLM token found. Please set it using `.config llm_token <token>`")
             else:
-                model = OpenAI(
-                    streaming=True,
-                    callbacks=[StreamingStdOutCallbackHandler()],
-                    temperature=0,
-                    openai_api_key=settings["llm_token"],
-                )
-                conversation = ConversationChain(
-                    llm=model,
-                    verbose=False,
-                    memory=chat_memory
-                )
-                await message.channel.send(conversation.predict(input=message.content))
+                model.llm_token = settings["llm_token"]
+                response = model.converse(message.content)
+                await message.channel.send(response)
 
 discord_bot_token = bot_token
 bot.run(discord_bot_token)
