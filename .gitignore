@@ -9,6 +9,7 @@ __pycache__/
 settings.json
 
 files/config.json
+test.py
 
 # Distribution / packaging
 .Python
