@@ -4,6 +4,9 @@ from functions import *
 import json
 from datetime import datetime
 from llm import LLM
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 intents = discord.Intents.default()
 intents.typing = False
@@ -15,8 +18,8 @@ model = LLM('')
 with open("settings.json", "r") as file:
     settings = json.load(file)
 
-channel_id = settings["channel_id"]
-bot_token = settings["bot_token"]
+channel_id = os.environ.get("CHANNEL_ID")
+bot_token = os.environ.get("BOT_TOKEN")
 
 bot = commands.Bot(command_prefix='.', intents=intents)
 
@@ -231,5 +234,4 @@ async def on_message(message):
                 response = model.converse(message.content)
                 await message.channel.send(response)
 
-discord_bot_token = bot_token
-bot.run(discord_bot_token)
+bot.run(bot_token)
