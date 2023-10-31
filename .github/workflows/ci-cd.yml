@@ -16,8 +16,10 @@ jobs:
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Docker image
+    - name: Set up QEMU
+      run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+    - name: Build and push multi-architecture Docker image
       run: |
-        docker build -t discord-bot-image .
-        docker tag discord-bot-image:latest ${{ secrets.DOCKER_USERNAME }}/discord-bot:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/discord-bot:latest
+        docker buildx create --use
+        docker buildx build --platform linux/amd64,linux/arm64 -t discord-bot-image . --push
