@@ -30,7 +30,7 @@ async def on_ready():
 
 @bot.command()
 async def getstarted(ctx):
-    """Sends the intro message"""
+    """Sends an intro message"""
     await ctx.send("Hello! I am your personal chatbot. I am here to help you with your queries. \nYou can ask me anything and I will try my best to answer your questions. \n\nTo get started, type `.docs` to see the list of available commands. \nYou can also type `.docs <command>` to see the detailed description of a specific command. \nHowever, it would be best if you could provide me with some information about yourself. \nFor example `.config name <yourname>` \n\nTo start a natural conversation, make sure to set or update your LLM token. You can do this by typing \n`.config llm_token <token>` \n")
 
 @bot.command()
@@ -40,7 +40,7 @@ async def hey(ctx):
 
 @bot.command()
 async def docs(ctx, command_name: str = None):
-    """Returns list of commands or detailed description of a specific command."""
+    """Returns list of commands or detailed description of a specific command"""
     if command_name:
         # Check if the specified command exists
         command = bot.get_command(command_name)
@@ -64,10 +64,7 @@ async def docs(ctx, command_name: str = None):
 
 @bot.command()
 async def example(ctx, command_name=None):
-    """
-    Shows an example of the specified command. If no command is specified, 
-    provides examples for all available commands.
-    """
+    """Shows an example of the specified command"""
     if command_name:
         # Check if the specified command exists
         command = bot.get_command(command_name)
@@ -98,12 +95,7 @@ async def ping(ctx):
 
 @bot.command()
 async def reminder(ctx, description, date, time):
-    """
-    Sets a reminder with description, date, and time.
-    
-    Example:
-    .reminder "Buy groceries" 2021-01-01 12:00
-    """
+    """Sets a reminder with description, date, and time"""
     
     # Combine date and time into a datetime object
     reminder_datetime = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
@@ -176,9 +168,7 @@ async def check_reminders():
 
 @bot.command()
 async def config(ctx, setting_name=None, setting_value=None):
-    """
-    Set or display configuration settings.
-    """
+    """Set or display configuration settings"""
     # Load existing settings from JSON file
     try:
         with open("files/config.json", "r") as file:
@@ -196,7 +186,7 @@ async def config(ctx, setting_name=None, setting_value=None):
     # If setting_value is None, check if the setting_name exists and return its value
     if setting_value is None:
         if setting_name in settings:
-            await ctx.send(f"Setting `{setting_name}` is set to `{settings[setting_name]}`")
+            await ctx.send(f"`{setting_name}` : `{settings[setting_name]}`")
         else:
             await ctx.send(f"No setting found for `{setting_name}`")
         return
