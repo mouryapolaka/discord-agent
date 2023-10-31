@@ -4,7 +4,6 @@ from functions import *
 import os
 import json
 from datetime import datetime
-import inspect
 
 intents = discord.Intents.default()
 intents.typing = False
@@ -52,7 +51,6 @@ async def docs(ctx, command_name: str = None):
 
         output_message = '\n\n'.join(sorted_commands_list)
         await ctx.send(output_message)
-
 
 @bot.command()
 async def example(ctx, command_name=None):
@@ -103,7 +101,7 @@ async def reminder(ctx, description, date, time):
 
     # Load existing reminders from JSON file
     try:
-        with open("output_files/reminders.json", "r") as file:
+        with open("files/reminders.json", "r") as file:
             reminders = json.load(file)
     except FileNotFoundError:
         reminders = []
@@ -112,7 +110,7 @@ async def reminder(ctx, description, date, time):
     reminders.append(reminder_data)
 
     # Save updated reminders to JSON file
-    with open("output_files/reminders.json", "w") as file:
+    with open("files/reminders.json", "w") as file:
         json.dump(reminders, file)
 
     await ctx.send(f"Reminder set: {description} on {date} at {time}")
@@ -120,7 +118,7 @@ async def reminder(ctx, description, date, time):
 @tasks.loop(seconds=60)
 async def check_reminders():
     # Open reminders.json file
-    with open("output_files/reminders.json", "r") as file:
+    with open("files/reminders.json", "r") as file:
         reminders = json.load(file)
 
     # Get the current time
@@ -130,7 +128,7 @@ async def check_reminders():
 
     # Load old reminders from old_reminders.json file
     try:
-        with open("output_files/old_reminders.json", "r") as old_file:
+        with open("files/old_reminders.json", "r") as old_file:
             old_reminders = json.load(old_file)
     except FileNotFoundError:
         old_reminders = []
@@ -153,12 +151,75 @@ async def check_reminders():
         reminders.remove(reminder)
 
     # Save updated reminders to reminders.json file
-    with open("output_files/reminders.json", "w") as file:
+    with open("files/reminders.json", "w") as file:
         json.dump(reminders, file)
 
     # Save sent reminders to old_reminders.json file
-    with open("output_files/old_reminders.json", "w") as old_file:
+    with open("files/old_reminders.json", "w") as old_file:
         json.dump(old_reminders, old_file)
+
+@bot.command()
+async def config(ctx, setting_name=None, setting_value=None):
+    """
+    Set or display configuration settings.
+    """
+    # Load existing settings from JSON file
+    try:
+        with open("files/config.json", "r") as file:
+            settings = json.load(file)
+    except FileNotFoundError:
+        settings = {}
+
+    # If setting_name is None, display the list of settings
+    if setting_name is None:
+        await ctx.send("Current settings:")
+        for key, value in settings.items():
+            await ctx.send(f"`{key}`: `{value}`")
+        return
+    
+    # If setting_value is None, check if the setting_name exists and return its value
+    if setting_value is None:
+        if setting_name in settings:
+            await ctx.send(f"Setting `{setting_name}` is set to `{settings[setting_name]}`")
+        else:
+            await ctx.send(f"No setting found for `{setting_name}`")
+        return
+    
+    # Special handling for 'llm_token' setting
+    if setting_name == 'llm_token':
+        # Check if the provided token is valid
+        if validate_llm_token(setting_value):
+            settings[setting_name] = setting_value
+            # Save updated settings to JSON file
+            with open("files/config.json", "w") as file:
+                json.dump(settings, file)
+            await ctx.send(f"Token validated. Setting updated.")
+        else:
+            await ctx.send("Invalid token. Please enter a valid token.")
+    else:
+        # For other settings, directly update the dictionary and JSON file
+        settings[setting_name] = setting_value
+        # Save updated settings to JSON file
+        with open("files/config.json", "w") as file:
+            json.dump(settings, file)
+        await ctx.send(f"Setting `{setting_name}` set to `{setting_value}`")
+
+@bot.event
+async def on_message(message):
+    # Check if the message sender is not the bot itself
+    if message.author != bot.user:
+        # Check if the content of the message is 'hello'
+        # if it is a command, process command else respond to message
+        if message.content.startswith('.'):
+            await bot.process_commands(message)
+        else:
+            # Check if llm_token exists in config.json, if doesn't exist send a message to the user
+            with open("files/config.json", "r") as file:
+                settings = json.load(file)
+            if "llm_token" not in settings:
+                await message.channel.send("No LLM token found. Please set it using `.config llm_token <token>`")
+            else:
+                None
 
 discord_bot_token = bot_token
 bot.run(discord_bot_token)

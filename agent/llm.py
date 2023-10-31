@@ -1,4 +1,3 @@
-
 from langchain.llms import OpenAI
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 import json

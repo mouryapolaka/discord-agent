@@ -1,5 +1,6 @@
 import re
 from datetime import datetime,timedelta
+import requests
 
 def process_events(timeframe):
     today = datetime.now().strftime('%Y-%m-%d')
@@ -29,3 +30,12 @@ def process_events(timeframe):
         return single_date, single_date
     else:
         print('error')
+
+def validate_llm_token(token):
+    url = 'https://api.openai.com/v1/files'
+    headers = {'Authorization': f'Bearer {token}'}
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return True
+    else:
+        return False
