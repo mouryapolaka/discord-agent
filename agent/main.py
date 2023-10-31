@@ -80,7 +80,7 @@ async def example(ctx, command_name=None):
 @bot.command()
 async def endchat(ctx):
     """Ends the current conversation"""
-    chat_memory.clear()
+    model.memory.clear()
     await ctx.send("Chat ended.")
 
 @bot.command()
