@@ -1,4 +1,4 @@
-# Use a multi-architecture base image
+# Use an official Python runtime as a parent image
 FROM --platform=$BUILDPLATFORM python:3.11-slim
 
 ENV BOT_TOKEN placeholder_token
