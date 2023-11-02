@@ -15,9 +15,6 @@ intents.message_content = True
 
 model = LLM('')
 
-with open("settings.json", "r") as file:
-    settings = json.load(file)
-
 channel_id = os.environ.get("CHANNEL_ID")
 bot_token = os.environ.get("BOT_TOKEN")
 
