@@ -18,6 +18,7 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build -t discord-bot-image .
+        docker buildx create --use
+        docker buildx build --platform linux/amd64,linux/arm64 -t discord-bot-image .
         docker tag discord-bot-image:latest ${{ secrets.DOCKER_USERNAME }}/discord-bot:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/discord-bot:latest
