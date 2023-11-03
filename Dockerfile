@@ -12,7 +12,6 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY . /app
 
-# Create config.json with empty braces inside ./app/files/ directory
-RUN mkdir -p ./app/files && echo "{}" > ./app/files/config.json
+RUN echo "{}" > /files/config.json
 
 CMD ["python3", "agent/main.py"]
