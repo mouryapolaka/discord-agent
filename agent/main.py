@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 from utils.llm import LLM
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key, dotenv_values
 from pathlib import Path
 load_dotenv()
 
@@ -244,5 +244,29 @@ async def savefile(ctx, type: str):
             await ctx.send(f"File saved: {path}/{attachment.filename}")
     else:
         await ctx.send("No attachments found to save.")
+
+@bot.command()
+async def env(ctx, var: str, value: str = None):
+    """Gets or sets the value of the specified environment variable in the .env file"""
+    dotenv_path = '.env'
+    # Make sure the .env file exists
+    if not os.path.isfile(dotenv_path):
+        with open(dotenv_path, 'w'):
+            pass
+
+    env_values = dotenv_values(dotenv_path)
     
+    if value:
+        # If a value is provided, set the variable
+        set_key(dotenv_path, var, value)
+        load_dotenv(dotenv_path)  # Reload the environment variables
+        await ctx.send(f"Environment variable `{var}` set to `{value}` in the .env file.")
+    else:
+        # If no value is provided, retrieve the variable
+        value = env_values.get(var)
+        if value is None:
+            await ctx.send(f"Environment variable `{var}` not found. Use `.env {var} <value>` to set it.")
+        else:
+            await ctx.send(f"Environment variable `{var}`: `{value}`")
+
 bot.run(bot_token)
