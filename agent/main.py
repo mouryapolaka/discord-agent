@@ -3,9 +3,10 @@ from discord.ext import commands, tasks
 from functions import *
 import json
 from datetime import datetime
-from llm import LLM
+from utils.llm import LLM
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 load_dotenv()
 
 intents = discord.Intents.default()
@@ -226,4 +227,22 @@ async def on_message(message):
                 response = model.converse(message.content)
                 await message.channel.send(response)
 
+@bot.command(name='savefile', help='Saves attachments to a specified subfolder in the local folder')
+async def savefile(ctx, type: str):
+    """Saves attachments to a specified subfolder in the local folder"""
+    
+    # Check for different types of documents, if Google credentials, save to a different folder
+    if type == 'GoogleDrive':
+        path = Path.home() / '.credentials'
+    
+    os.makedirs(path, exist_ok=True)
+
+    if ctx.message.attachments:
+        for attachment in ctx.message.attachments:
+            local_filename = os.path.join(path, attachment.filename)
+            await attachment.save(local_filename)
+            await ctx.send(f"File saved: {path}/{attachment.filename}")
+    else:
+        await ctx.send("No attachments found to save.")
+    
 bot.run(bot_token)
